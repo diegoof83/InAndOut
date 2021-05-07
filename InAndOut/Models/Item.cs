@@ -11,9 +11,15 @@ namespace InAndOut.Models
     {
         [Key]
         public int Id { get; set; }
+
         [DisplayName("Item Name")]
+        [Required]
         public string Name { get; set; }
+
+        [Required]
         public string Borrower { get; set; }
+
+        [Required]
         public string Lender { get; set; }
     }
 }

@@ -11,8 +11,13 @@ namespace InAndOut.Models
     {
         [Key]
         public int Id { get; set; }
+
         [DisplayName("Expense")]
+        [Required]
         public string Name { get; set; }
+
+        [Required]
+        [Range(0, int.MaxValue, ErrorMessage = "Can not be a negative value.")]
         public int Amount { get; set; }
 
     }
