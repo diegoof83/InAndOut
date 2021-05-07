@@ -17,19 +17,20 @@ namespace InAndOut.Controllers
             _dbContext = dbContext;
         }
 
+        //GET
         public IActionResult Index()
         {
             IEnumerable<Expense> expenses = _dbContext.Expenses;
             return View(expenses);
         }
 
-        //GET_Create
+        //GET_CREATE
         public IActionResult Create()
         {
             return View();
         }
 
-        //POST_Create
+        //POST_CREATE
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Create(Expense newExpense)
@@ -41,6 +42,69 @@ namespace InAndOut.Controllers
                 return RedirectToAction("Index");
             }
             return View(newExpense);
+        }
+
+        //GET-DELETE
+        public IActionResult Delete(int? Id)
+        {
+            return this.Get(Id);
+        }
+
+        //POST_DELETE
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult DeletePost(int? Id)
+        {
+            if ((Id == null) || (Id == 0))
+            {
+                return NotFound();
+            }
+
+            Expense expense = _dbContext.Expenses.Find(Id);
+            if (expense == null)
+            {
+                return NotFound();
+            }
+
+            _dbContext.Expenses.Remove(expense);
+            _dbContext.SaveChanges();
+            return RedirectToAction("Index");
+        }
+
+        //GET-UPDATE
+        public IActionResult Update(int? Id)
+        {
+            return this.Get(Id);
+        }
+
+        //POST_UPDATE
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Update(Expense expense)
+        {
+            if (ModelState.IsValid)
+            {
+                _dbContext.Expenses.Update(expense);
+                _dbContext.SaveChanges();
+                return RedirectToAction("Index");
+            }
+            return View(expense);
+        }
+
+        private IActionResult Get(int? Id)
+        {
+            if ((Id == null) || (Id == 0))
+            {
+                return NotFound();
+            }
+
+            Expense expense = _dbContext.Expenses.Find(Id);
+            if (expense == null)
+            {
+                return NotFound();
+            }
+
+            return View(expense);
         }
     }
 }
