@@ -22,24 +22,20 @@ namespace InAndOut.Controllers
         //GET
         public IActionResult Index()
         {
-            IEnumerable<Expense> expenses = _dbContext.Expenses;
-            return View(expenses);
+            IEnumerable<Expense> objList = _dbContext.Expenses;
+
+            foreach (var item in objList)
+            {
+                item.Category = this.GetCategory(item.ExpenseCategoryId);
+            }
+
+            return View(objList);
         }
 
         //GET_CREATE
         public IActionResult Create()
         {
-            ExpenseVM expenseVM = new ExpenseVM()
-            {
-                Expense = new Expense(),
-                CategoryDropDown = _dbContext.ExpenseCategories.
-                                                Select(x => new SelectListItem
-                                                {
-                                                    Text = x.Name,
-                                                    Value = x.Id.ToString()
-                                                })
-            };
-            return View(expenseVM);
+            return View(this.CreateVM());
         }
 
         //POST_CREATE
@@ -57,66 +53,90 @@ namespace InAndOut.Controllers
         }
 
         //GET-DELETE
-        public IActionResult Delete(int? Id)
+        public IActionResult Delete(int? id)
         {
-            return this.Get(Id);
+            return this.Get(id);
         }
 
         //POST_DELETE
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult DeletePost(int? Id)
+        public IActionResult Delete(ExpenseVM model)
         {
-            if ((Id == null) || (Id == 0))
+            int? id = model.Expense.Id;
+            if ((id == null) || (id == 0))
             {
                 return NotFound();
             }
 
-            Expense expense = _dbContext.Expenses.Find(Id);
-            if (expense == null)
+            Expense obj = _dbContext.Expenses.Find(id);
+            if (obj == null)
             {
                 return NotFound();
             }
 
-            _dbContext.Expenses.Remove(expense);
+            _dbContext.Expenses.Remove(obj);
             _dbContext.SaveChanges();
             return RedirectToAction("Index");
         }
 
         //GET-UPDATE
-        public IActionResult Update(int? Id)
+        public IActionResult Update(int? id)
         {
-            return this.Get(Id);
+            return this.Get(id);
         }
 
         //POST_UPDATE
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Update(Expense expense)
+        public IActionResult Update(ExpenseVM obj)
         {
             if (ModelState.IsValid)
             {
-                _dbContext.Expenses.Update(expense);
+                _dbContext.Expenses.Update(obj.Expense);
                 _dbContext.SaveChanges();
                 return RedirectToAction("Index");
             }
-            return View(expense);
+            return View(obj);
         }
 
-        private IActionResult Get(int? Id)
+        private IActionResult Get(int? id)
         {
-            if ((Id == null) || (Id == 0))
+            if ((id == null) || (id == 0))
             {
                 return NotFound();
             }
 
-            Expense expense = _dbContext.Expenses.Find(Id);
-            if (expense == null)
+            ExpenseVM obj = this.CreateVM();
+            obj.Expense = _dbContext.Expenses.Find(id);
+
+            if (obj.Expense == null)
             {
                 return NotFound();
             }
 
-            return View(expense);
+            return View(obj);
+        }
+
+        private ExpenseCategory GetCategory(int id)
+        {            
+            return _dbContext.ExpenseCategories.FirstOrDefault(x => x.Id.Equals(id));
+        }
+
+        private ExpenseVM CreateVM()
+        {
+            ExpenseVM objVM = new ExpenseVM()
+            {
+                Expense = new Expense(),
+                CategoryDropDown = _dbContext.ExpenseCategories.
+                                                Select(x => new SelectListItem
+                                                {
+                                                    Text = x.Name,
+                                                    Value = x.Id.ToString()
+                                                })
+            };
+
+            return objVM;
         }
     }
 }
